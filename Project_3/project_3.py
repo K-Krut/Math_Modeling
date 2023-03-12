@@ -125,30 +125,17 @@ def print_euler(data):
         print(f'x{i}={data["x"][i]}; y{i}={data["y"][i]}')
 
 
-def print_data_table():
-    data = [[0, 0, 0, 0, 0],
-            [1, 2, 3, 4, 5],
-            [6, 7, 8, 9, 10],
-            [11, 12, 13, 14, 15],
-            [16, 17, 18, 19, 20]]
+def print_data_table(euler_, euler_cauchy_, euler_enhanced_, runge_kutte_):
+    data = [euler_['x'], euler_['y'], euler_cauchy_['y'], euler_enhanced_['y'], runge_kutte_['y']]
     rows = [f'n = {x}' for x in range(len(data[0]))]
     data = np.transpose(data)
     columns = ('x', 'y Ейлер Явний', 'y Ейлера-Коші', 'y Ейлер Вд.', 'y Рунге-Кутта')
     colors = plt.cm.BuPu(np.linspace(0, 0.5, len(rows)))
-    cell_text = []
-    for row in range(len(data)):
-        cell_text.append([f'{x}' for x in data[row]])
-
-
-    # cell_text = [[f'{x}' for x in data[row]] for row in range(len(data))]
-
+    cell_text = [[f'{x}' for x in data[row]] for row in range(len(data))]
 
     plt.box(on=None)
-    the_table = plt.table(cellText=cell_text,
-                          rowLabels=rows,
-                          rowColours=colors,
-                          colLabels=columns,
-                          loc='center')
+
+    plt.table(cellText=cell_text, rowLabels=rows,  rowColours=colors, colLabels=columns, loc='center')
 
     plt.xticks([])
     plt.yticks([])
@@ -157,11 +144,16 @@ def print_data_table():
     ax.get_yaxis().set_visible(False)
     plt.show()
 
-#                  x0    xn   y0   h
-euler_data = euler(1.4, 2.4, 2.2, 0.1)
-euler_cauchy_data = euler_cauchy(1.4, 2.4, 2.2, 0.1)
-euler_enhanced_data = euler_enhanced(1.4, 2.4, 2.2, 0.1)
-runge_kutte_data = runge_kutte(1.4, 2.4, 2.2, 0.1)
 
-# draw_all(euler_data['y'], euler_cauchy_data['y'], euler_enhanced_data['y'], runge_kutte_data['y'])
-print_data_table()
+x0_ = 1.4
+xn_ = 2.4
+y0_ = 2.2
+h_ = 0.1
+
+euler_data = euler(x0_, xn_, y0_, h_)
+euler_cauchy_data = euler_cauchy(x0_, xn_, y0_, h_)
+euler_enhanced_data = euler_enhanced(x0_, xn_, y0_, h_)
+runge_kutte_data = runge_kutte(x0_, xn_, y0_, h_)
+
+draw_all(euler_data['y'], euler_cauchy_data['y'], euler_enhanced_data['y'], runge_kutte_data['y'])
+print_data_table(euler_data, euler_cauchy_data, euler_enhanced_data, runge_kutte_data)
