@@ -14,6 +14,32 @@ def f(x, y):
     return y + math.cos(x / 13)
 
 
+def df(x):
+    """
+     y' = y + cos(x/13)
+     y' = Ce^x + 13sin(x/13) / 170 - 169cos(x/13) / 170
+     x0 = 1.4; y0 = 2.5 =>
+     C = - (13 * sin(7/65) - 169 * cos(7/65) - 425) / 170 * e^1.4
+     y' = (1/170) * (e*sin(x/e) - e^2 * cos(x/ e) - e^(x -1.4)*(e*sin(7/(5e)) - e^2*cos(7/(5e)) - 5))
+    """
+    return -((13 * math.sin(7 / 65) - 169 * math.cos(7 / 65) - 425) * math.e ** (x - 1.4)) / 170 + 13 * math.sin(
+        x / 13) / 170 - 169 * math.cos(x / 13) / 170
+
+
+def precise_solution(x0, xn, y0, h):
+    n = (xn - x0) / h
+    x = x0
+    y = y0
+    result = {'x': [], 'y': []}
+    for _ in range(int(n)):
+        result['x'].append(round(x, 4))
+        result['y'].append(round(y, 4))
+        x = x + h
+        y = df(x)
+    result['x'].append(round(x, 4))
+    result['y'].append(round(y, 4))
+    return result
+
 def euler(x0, xn, y0, h):
     n = (xn - x0) / h
 
@@ -21,7 +47,7 @@ def euler(x0, xn, y0, h):
     y = y0
 
     result = {'x': [], 'y': []}
-    for i in range(int(n)):
+    for _ in range(int(n)):
         result['x'].append(round(x, 4))
         result['y'].append(round(y, 4))
         x = x + h
@@ -39,7 +65,7 @@ def euler_cauchy(x0, xn, y0, h):
 
     result = {'x': [], 'y': []}
 
-    for i in range(int(n)):
+    for _ in range(int(n)):
         result['x'].append(round(xi, 4))  # записуємо результуюче значення xi
         result['y'].append(round(yi, 4))  # записуємо результуюче значення yi
         yi1_ = yi + h * f(xi, yi)  # ‾yi+1 = yi + hƒ(xi, yi)
@@ -59,7 +85,7 @@ def euler_enhanced(x0, xn, y0, h):
 
     result = {'x': [], 'y': []}
 
-    for i in range(int(n)):
+    for _ in range(int(n)):
         result['x'].append(round(xi, 4))  # записуємо результуюче значення xi
         result['y'].append(round(yi, 4))  # записуємо результуюче значення yi
         yi1 = yi + h * f(xi + h / 2, yi + h / 2 * f(xi, yi))  # yi+1 = yi + hƒ(xi + h / 2, yi + h / 2 ƒ(xi, yi))
@@ -78,7 +104,7 @@ def runge_kutte(x0, xn, y0, h):
 
     result = {'x': [], 'y': []}
 
-    for i in range(int(n)):
+    for _ in range(int(n)):
         result['x'].append(round(xi, 4))  # записуємо результуюче значення xi
         result['y'].append(round(yi, 4))  # записуємо результуюче значення yi
         k0 = f(xi, yi)
@@ -105,14 +131,14 @@ def draw(data):
     plt.show()
 
 
-def draw_all(euler_, euler_cauchy_, euler_enh, runge):
+def draw_all(euler_, euler_cauchy_, euler_enh, runge, precise):
     """Function for drawing graphic"""
     x = np.linspace(1.4, 2.4, len(euler_))
-
     plt.plot(x, euler_, 'green', linewidth=0.2, label='Явний метод Ейлера')
     plt.plot(x, euler_cauchy_, 'black', linewidth=0.2, label='метод Ейлера-Коші')
     plt.plot(x, euler_enh, 'yellow', linewidth=0.2, label='Вдосконалений метод Ейлера')
     plt.plot(x, runge, 'red', linewidth=0.2, label='Рунге-Кутта')
+    plt.plot(x, precise, 'orange', linewidth=0.2, label='Точне')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.grid(color='black', linestyle='--', linewidth=0.5)
@@ -125,17 +151,17 @@ def print_euler(data):
         print(f'x{i}={data["x"][i]}; y{i}={data["y"][i]}')
 
 
-def print_data_table(euler_, euler_cauchy_, euler_enhanced_, runge_kutte_):
-    data = [euler_['x'], euler_['y'], euler_cauchy_['y'], euler_enhanced_['y'], runge_kutte_['y']]
+def print_data_table(euler_, euler_cauchy_, euler_enhanced_, runge_kutte_, precise_):
+    data = [euler_['x'], euler_['y'], euler_cauchy_['y'], euler_enhanced_['y'], runge_kutte_['y'], precise_['y']]
     rows = [f'n = {x}' for x in range(len(data[0]))]
     data = np.transpose(data)
-    columns = ('x', 'y Ейлер Явний', 'y Ейлера-Коші', 'y Ейлер Вд.', 'y Рунге-Кутта')
+    columns = ('x', 'y Ейлер Явний', 'y Ейлера-Коші', 'y Ейлер Вд.', 'y Рунге-Кутта', 'y Точне')
     colors = plt.cm.BuPu(np.linspace(0, 0.5, len(rows)))
     cell_text = [[f'{x}' for x in data[row]] for row in range(len(data))]
 
     plt.box(on=None)
 
-    plt.table(cellText=cell_text, rowLabels=rows,  rowColours=colors, colLabels=columns, loc='center')
+    plt.table(cellText=cell_text, rowLabels=rows, rowColours=colors, colLabels=columns, loc='center')
 
     plt.xticks([])
     plt.yticks([])
@@ -147,13 +173,15 @@ def print_data_table(euler_, euler_cauchy_, euler_enhanced_, runge_kutte_):
 
 x0_ = 1.4
 xn_ = 2.4
-y0_ = 2.2
+y0_ = 2.5
 h_ = 0.1
 
 euler_data = euler(x0_, xn_, y0_, h_)
 euler_cauchy_data = euler_cauchy(x0_, xn_, y0_, h_)
 euler_enhanced_data = euler_enhanced(x0_, xn_, y0_, h_)
 runge_kutte_data = runge_kutte(x0_, xn_, y0_, h_)
+precise_data = precise_solution(x0_, xn_, y0_, h_)
 
-draw_all(euler_data['y'], euler_cauchy_data['y'], euler_enhanced_data['y'], runge_kutte_data['y'])
-print_data_table(euler_data, euler_cauchy_data, euler_enhanced_data, runge_kutte_data)
+
+draw_all(euler_data['y'], euler_cauchy_data['y'], euler_enhanced_data['y'], runge_kutte_data['y'], precise_data['y'])
+print_data_table(euler_data, euler_cauchy_data, euler_enhanced_data, runge_kutte_data, precise_data)
