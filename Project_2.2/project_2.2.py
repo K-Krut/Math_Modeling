@@ -29,30 +29,6 @@ def get_equation(a, b):
     return sole
 
 
-def get_errors_(a, b, x, algorythm=Seidel(), iter=100, error_=1e-3):
-    errors = np.array([x])
-    for i in range(iter):
-        x, error = algorythm(a, b, x)
-        errors = np.concatenate((errors, np.array([error])), axis=0)
-        if max(abs(error)) < error_:
-            break
-
-    return errors
-
-
-class SOLE:
-    def __init__(self, algorythm=Seidel(), error=1e-3, iterations=100):
-        self.algorythm = algorythm
-        self.error = error
-        self.iterations = iterations
-
-    def __call__(self, a, b):
-        x = np.random.random(b.size) * 100
-        print(get_equation(a, b))
-        print(pd.DataFrame(get_errors_(a, b, x), columns=["error x" + str(i) for i in range(b.size)]))
-
-        print("\nresult: " + str(x))
-
 def get_errors(a, b, x, algorythm, iter, error_):
     errors = np.array([x])
     for i in range(iter):
@@ -62,35 +38,31 @@ def get_errors(a, b, x, algorythm, iter, error_):
             break
 
     return errors
-def sole(a, b, algorythm=Seidel(), iter=100, error_=1e-3):
-    x = np.random.random(b.size) * 100
-    print(get_equation(a, b))
-    print(pd.DataFrame(get_errors(a, b, x, algorythm, iter, error_), columns=["error x" + str(i) for i in range(b.size)]))
-
-    print("\nresult: " + str(x))
 
 
-A = np.array([[36, 0, 4, -5], [2, 30, 0, -4], [4, 2, 32, 0], [0, 0, 11, 40]])
-B = np.array([40, 39, -19, 31])
-# task = SOLE(algorythm=Seidel())
-# task = SOLE(algorythm=Jakobi())
-#
-# A = np.array([
-#     [12, 0, 0, 3],
-#     [2, 20, -3, 0],
-#     [0, 2, 16, -1],
-#     [4, -2, 0, 24]
-# ])
-# B = np.array([18, 39, -25, 0])
-# task(A, B)
-"""
- 36 + 0x +  4x2 + -5x3 = 40;
- 2 + 30x +  0x2 + -4x3 = 39;
- 4 + 2x +  32x2 + 0x3 = -19;
- 0 + 0x +  11x2 + 40x3 = 31;
+class Sole:
+    def __init__(self, algorythm=Seidel(), error=1e-3, iter=100):
+        self.algorythm = algorythm
+        self.error = error
+        self.iter = iter
+
+    def __call__(self, a, b):
+        x = np.random.random(b.size) * 100
+        errors = get_errors(a, b, x, self.algorythm, self.iter, self.error)
+        errors_table = pd.DataFrame(errors, columns=["error x" + str(i) for i in range(b.size)])
+        return f"Equation:\n{get_equation(a, b)}\n", f"Errors:\n{errors_table}\n\n", f"Result:\n{str(x)}"
 
 
-"""
+A = np.array([
+    [12, 0, 0, 3],
+    [2, 20, -3, 0],
+    [0, 2, 16, -1],
+    [4, -2, 0, 24]
+])
+B = np.array([18, 39, -25, 0])
 
 
-sole(A, B)
+result = Sole()
+# result = Sole(Jakobi())
+for data in result(A, B):
+    print(data)
